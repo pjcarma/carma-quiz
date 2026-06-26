@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CARMA — What's your archetype?</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --saffron: #FF9C4A;
+    --charcoal: #3C3C3C;
+    --charcoal-dark: #2A2A2A;
+    --off-white: #F7F5F2;
+    --white: #FFFFFF;
+    --border: #E2DDD8;
+    --muted: #8A8480;
+    --light-bg: #F2EEE9;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: var(--off-white);
+    color: var(--charcoal);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: var(--charcoal);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--white);
+  }
+  .logo span { color: var(--saffron); }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .container { width: 100%; max-width: 620px; }
+
+  #intro { text-align: center; padding: 2rem 0; }
+  .intro-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--saffron);
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+  }
+  .intro-title {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--charcoal);
+    margin-bottom: 1.25rem;
+  }
+  .intro-title em {
+    font-style: italic;
+    color: var(--saffron);
+  }
+  .intro-sub {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 460px;
+    margin: 0 auto 2.5rem;
+  }
+  .archetypes-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+  }
+  .arch-chip {
+    font-size: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    background: var(--white);
+  }
+  .start-btn {
+    background: var(--saffron);
+    color: var(--white);
+    border: none;
+    padding: 16px 40px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: opacity 0.15s;
+  }
+  .start-btn:hover { opacity: 0.88; }
+  .intro-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1rem;
+  }
+
+  #quiz { display: none; }
+
+  .progress-track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 2.5rem;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--saffron);
+    border-radius: 2px;
+    transition: width 0.35s ease;
+  }
+
+  .q-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .q-eyebrow {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--saffron);
+    font-weight: 700;
+  }
+  .q-counter { font-size: 12px; color: var(--muted); }
+
+  .q-text {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--charcoal);
+    margin-bottom: 1.75rem;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+
+  .opt {
+    padding: 16px 20px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--charcoal);
+    text-align: left;
+    line-height: 1.5;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: Arial, sans-serif;
+  }
+  .opt:hover { border-color: var(--saffron); }
+  .opt.selected {
+    border-color: var(--saffron);
+    background: #FFF7F0;
+  }
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .btn-back {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 11px 22px;
+    font-size: 14px;
+    color: var(--charcoal);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: border-color 0.15s;
+  }
+  .btn-back:hover { border-color: var(--charcoal); }
+  .btn-back:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn-next {
+    background: var(--charcoal);
+    border: none;
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.5px;
+    transition: background 0.15s;
+  }
+  .btn-next:hover { background: var(--charcoal-dark); }
+  .btn-next:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-next.final { background: var(--saffron); }
+  .btn-next.final:hover { opacity: 0.88; background: var(--saffron); }
+
+  #result { display: none; }
+
+  .result-eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--saffron);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  .result-name {
+    font-size: 52px;
+    font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.05;
+    margin-bottom: 0.5rem;
+  }
+  .result-verb {
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+  }
+  .result-rule {
+    width: 48px;
+    height: 3px;
+    background: var(--saffron);
+    margin-bottom: 1.75rem;
+    border-radius: 2px;
+  }
+  .result-desc {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--charcoal);
+    margin-bottom: 1.75rem;
+  }
+  .traits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 2rem;
+  }
+  .trait {
+    font-size: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    background: var(--white);
+  }
+
+  .also-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+  .also-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .also-chip {
+    font-size: 13px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--charcoal);
+    background: var(--white);
+  }
+
+  .result-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  .all-archetypes { margin-bottom: 2rem; }
+  .all-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .arch-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .arch-card.is-you {
+    border-color: var(--saffron);
+    background: #FFF7F0;
+  }
+  .arch-card-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 3px;
+  }
+  .arch-card.is-you .arch-card-name { color: var(--saffron); }
+  .arch-card-verb { font-size: 11px; color: var(--muted); }
+
+  .retake-btn {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    font-size: 14px;
+    color: var(--charcoal);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: border-color 0.15s;
+  }
+  .retake-btn:hover { border-color: var(--charcoal); }
+
+  .share-section {
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .share-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--saffron);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .share-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .share-btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .share-btn {
+    padding: 11px 22px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    text-decoration: none;
+    border: none;
+    letter-spacing: 0.5px;
+    transition: opacity 0.15s;
+  }
+  .share-btn:hover { opacity: 0.85; }
+  .share-email {
+    background: var(--charcoal);
+    color: var(--white);
+  }
+  .share-copy {
+    background: var(--saffron);
+    color: var(--white);
+  }
+  .copy-confirm {
+    display: none;
+    margin-top: 0.75rem;
+    font-size: 13px;
+    color: var(--charcoal);
+    font-style: italic;
+  }
+
+  footer {
+    background: var(--charcoal);
+    padding: 1.25rem 2rem;
+    text-align: center;
+  }
+  .footer-text { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+
+  @media (max-width: 480px) {
+    .intro-title { font-size: 30px; }
+    .result-name { font-size: 38px; }
+    .q-text { font-size: 18px; }
+    header { padding: 1rem 1.25rem; }
+    main { padding: 2rem 1.25rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">C<span>A</span>RMA</div>
+  <div class="header-label">Global Employee Survey 2026</div>
+</header>
+
+<main>
+  <div class="container">
+
+    <div id="intro">
+      <div class="intro-eyebrow">CARMA ARCHETYPES</div>
+      <h1 class="intro-title">What kind of<br><em>CARMA person</em><br>are you?</h1>
+      <p class="intro-sub">12 questions. No wrong answers. Discover which of the six CARMA archetypes you are — and what that says about how you work, what drives you, and where you belong.</p>
+      <div class="archetypes-preview">
+        <span class="arch-chip">The Legend</span>
+        <span class="arch-chip">The Scholar</span>
+        <span class="arch-chip">The Catalyst</span>
+        <span class="arch-chip">The Realist</span>
+        <span class="arch-chip">The Hunter</span>
+        <span class="arch-chip">The Iconoclast</span>
+      </div>
+      <button class="start-btn" onclick="startQuiz()">FIND OUT</button>
+      <p class="intro-meta">Takes about 3 minutes &nbsp;·&nbsp; Anonymous</p>
+    </div>
+
+    <div id="quiz">
+      <div class="progress-track">
+        <div class="progress-fill" id="prog"></div>
+      </div>
+      <div class="q-meta">
+        <div class="q-eyebrow" id="qeyebrow">QUESTION 1</div>
+        <div class="q-counter" id="qcounter">1 / 12</div>
+      </div>
+      <div class="q-text" id="qtext"></div>
+      <div class="options" id="opts"></div>
+      <div class="nav">
+        <button class="btn-back" id="backBtn" onclick="goBack()" disabled>Back</button>
+        <button class="btn-next" id="nextBtn" onclick="goNext()" disabled>Next</button>
+      </div>
+    </div>
+
+    <div id="result"></div>
+
+  </div>
+</main>
+
+<footer>
+  <p class="footer-text">CARMA &nbsp;·&nbsp; Global Employee Survey 2026 &nbsp;·&nbsp; Part I: The Why</p>
+</footer>
+
+<script>
+var ARCHETYPES = {
+  legend: {
+    name: "The Legend",
+    verb: "CARMA — you sustain it",
+    desc: "You are the custodian of CARMA's values, culture, reputation, and history. Fiercely loyal, CARMA is part of your identity and the fabric of your life — by choice. You stand up for the business where it matters and believe wholeheartedly in the vision. People gravitate towards you to learn who we are.",
+    traits: ["Pride", "Honour", "Fierce loyalty", "Stewardship", "Belonging"]
+  },
+  scholar: {
+    name: "The Scholar",
+    verb: "CARMA — you deepen it",
+    desc: "A craftsperson who is curious, meticulous, a deep thinker. Academia and mastery navigate your path. You want to understand every aspect of your mission and richly impact the quality of our work. You take your craft seriously, and this emanates throughout every touchpoint you have.",
+    traits: ["Mastery", "Precision", "Intellectual curiosity", "Craft", "Depth"]
+  },
+  catalyst: {
+    name: "The Catalyst",
+    verb: "CARMA — you believe in it",
+    desc: "Driven by the courageous belief that you and the company can make a meaningful difference and change the world by the work that we do. Driven by purpose, values, and ethics, you show up with hope and determination — and the conviction that purpose equals success.",
+    traits: ["Purpose", "Belief", "Inspiration", "Meaning", "Mission", "Courage"]
+  },
+  realist: {
+    name: "The Realist",
+    verb: "CARMA — you run it",
+    desc: "Straightforward, pragmatic, the engine of the company. Laser focused on the end goal and cutting through noise to get the job done. You lead projects to completion without allowing distraction. Sometimes underestimated. The organisation runs because of you, even when it doesn't know it.",
+    traits: ["Reliability", "Clarity", "Practicality", "Consistency", "Follow-through"]
+  },
+  hunter: {
+    name: "The Hunter",
+    verb: "CARMA — you grow it",
+    desc: "A builder, an ambitious climber, someone who relentlessly seeks success. Fuelled by the pursuit and hungry — whether a new client, product, market, or candidate — your focus is winning, for yourself and for the business. You bring confidence, excitement, and passion into every room. The company is growing because of you.",
+    traits: ["Ambition", "Drive", "Hunger", "Momentum", "Competitiveness"]
+  },
+  iconoclast: {
+    name: "The Iconoclast",
+    verb: "CARMA — you reimagine it",
+    desc: "A visionary, a dreamer, designing the future before anyone else can see it. You don't break the mould — you build something new. A challenger, a rebel, a creative, a destroyer of the mundane. Your ideas feel too early, too abstract — until they transform the business.",
+    traits: ["Vision", "Creativity", "Originality", "Courage", "Imagination"]
+  }
+};
+
+var QUESTIONS = [
+  {
+    q: "It's Monday morning. What's running through your head?",
+    opts: [
+      { text: "What needs to get done today — let's move.", arc: "realist" },
+      { text: "How do I make this week count toward the bigger goal?", arc: "hunter" },
+      { text: "There's a problem we've been ignoring. Today I bring it up.", arc: "iconoclast" },
+      { text: "I love being back. This place just feels right.", arc: "legend" }
+    ]
+  },
+  {
+    q: "Someone asks why you work at CARMA. What's your honest answer?",
+    opts: [
+      { text: "Because the work genuinely matters — we're making a difference.", arc: "catalyst" },
+      { text: "Because I'm still learning and deepening my craft here.", arc: "scholar" },
+      { text: "Because I want to build something, and this is where I can.", arc: "hunter" },
+      { text: "Because CARMA has become part of who I am.", arc: "legend" }
+    ]
+  },
+  {
+    q: "A new process is introduced that you think is inefficient. You...",
+    opts: [
+      { text: "Follow it, but raise your concern through the right channel.", arc: "realist" },
+      { text: "Research why it was introduced before deciding how to feel.", arc: "scholar" },
+      { text: "Propose a better one — with evidence to back it up.", arc: "iconoclast" },
+      { text: "Rally others around a better way of doing it.", arc: "catalyst" }
+    ]
+  },
+  {
+    q: "What does success look like to you at the end of a year?",
+    opts: [
+      { text: "I hit my targets. Exceeded them if possible.", arc: "hunter" },
+      { text: "I built or changed something that wasn't there before.", arc: "iconoclast" },
+      { text: "I delivered consistently and people could rely on me.", arc: "realist" },
+      { text: "I went deeper in my craft than the year before.", arc: "scholar" }
+    ]
+  },
+  {
+    q: "A colleague is struggling. What do you do?",
+    opts: [
+      { text: "Help them fix it practically — here's what you do.", arc: "realist" },
+      { text: "Share what you know. Teaching is part of how you learn.", arc: "scholar" },
+      { text: "Remind them why the work matters. Reconnect them to purpose.", arc: "catalyst" },
+      { text: "Take them under your wing. You know this place.", arc: "legend" }
+    ]
+  },
+  {
+    q: "What kind of feedback means the most to you?",
+    opts: [
+      { text: "'You delivered exactly what we needed, on time, every time.'", arc: "realist" },
+      { text: "'You made us think completely differently — we wouldn't have got there without you.'", arc: "iconoclast" },
+      { text: "'Your energy and belief changed how the whole team felt about this.'", arc: "catalyst" },
+      { text: "'The standard of your work is remarkable — it raises everyone around you.'", arc: "scholar" }
+    ]
+  },
+  {
+    q: "How do you relate to CARMA's culture?",
+    opts: [
+      { text: "I protect it. It matters more than any process or policy.", arc: "legend" },
+      { text: "I contribute to it through the quality of my work.", arc: "scholar" },
+      { text: "I want to push it forward — what we could be is more exciting than what we are.", arc: "iconoclast" },
+      { text: "I believe in what it stands for. It's why I'm here.", arc: "catalyst" }
+    ]
+  },
+  {
+    q: "You have a free afternoon to work on anything you want. You...",
+    opts: [
+      { text: "Go deep on something you've been meaning to master for months.", arc: "scholar" },
+      { text: "Work on an opportunity or pitch you've been building.", arc: "hunter" },
+      { text: "Design the better solution that's been nagging at you.", arc: "iconoclast" },
+      { text: "Use it to help someone else move forward.", arc: "catalyst" }
+    ]
+  },
+  {
+    q: "What do you think CARMA needs more of?",
+    opts: [
+      { text: "Clarity and focus. Less noise, more execution.", arc: "realist" },
+      { text: "Hunger. We should be going after bigger things.", arc: "hunter" },
+      { text: "Space to experiment. The best ideas come from play.", arc: "iconoclast" },
+      { text: "Recognition of the people who have built and protected this place.", arc: "legend" }
+    ]
+  },
+  {
+    q: "When you look back at your career in 20 years, what do you want to have done?",
+    opts: [
+      { text: "Left a legacy — built something that lasted beyond my time here.", arc: "legend" },
+      { text: "Become genuinely masterful at what I do.", arc: "scholar" },
+      { text: "Grown something significant — a business, a team, a market.", arc: "hunter" },
+      { text: "Changed how people think about something that matters.", arc: "iconoclast" }
+    ]
+  },
+  {
+    q: "The company is going through change. Your instinct is to...",
+    opts: [
+      { text: "Stay calm, stay focused, keep delivering.", arc: "realist" },
+      { text: "Protect what makes this place worth working at.", arc: "legend" },
+      { text: "See it as an opportunity — what can I build from this?", arc: "hunter" },
+      { text: "Question what we should keep and what we should let go.", arc: "iconoclast" }
+    ]
+  },
+  {
+    q: "Which of these sounds most like you?",
+    opts: [
+      { text: "I do things properly or I don't do them at all.", arc: "scholar" },
+      { text: "I'm the one who gets it over the line.", arc: "realist" },
+      { text: "I feel it when I talk about what we do here. It means something to me.", arc: "catalyst" },
+      { text: "I'm always working out how to win the next thing.", arc: "hunter" }
+    ]
+  }
+];
+
+var current = 0;
+var answers = [];
+var selected = null;
+
+function startQuiz() {
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  render();
+}
+
+function render() {
+  var q = QUESTIONS[current];
+  var total = QUESTIONS.length;
+  document.getElementById('prog').style.width = (current / total * 100) + '%';
+  document.getElementById('qeyebrow').textContent = 'QUESTION ' + (current + 1);
+  document.getElementById('qcounter').textContent = (current + 1) + ' / ' + total;
+  document.getElementById('qtext').textContent = q.q;
+
+  var opts = document.getElementById('opts');
+  opts.innerHTML = '';
+  q.opts.forEach(function(o, i) {
+    var btn = document.createElement('button');
+    btn.className = 'opt' + (answers[current] === i ? ' selected' : '');
+    btn.textContent = o.text;
+    btn.onclick = function() { selectOpt(i); };
+    opts.appendChild(btn);
+  });
+
+  selected = answers[current] !== undefined ? answers[current] : null;
+  document.getElementById('backBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = selected === null;
+  var isFinal = current === QUESTIONS.length - 1;
+  document.getElementById('nextBtn').textContent = isFinal ? 'SEE MY RESULT' : 'NEXT';
+  document.getElementById('nextBtn').className = 'btn-next' + (isFinal ? ' final' : '');
+}
+
+function selectOpt(i) {
+  answers[current] = i;
+  selected = i;
+  document.querySelectorAll('.opt').forEach(function(b, idx) {
+    b.classList.toggle('selected', idx === i);
+  });
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function goNext() {
+  if (selected === null) return;
+  answers[current] = selected;
+  if (current < QUESTIONS.length - 1) {
+    current++;
+    selected = answers[current] !== undefined ? answers[current] : null;
+    render();
+    window.scrollTo(0, 0);
+  } else {
+    showResult();
+  }
+}
+
+function goBack() {
+  if (current > 0) {
+    current--;
+    selected = answers[current] !== undefined ? answers[current] : null;
+    render();
+    window.scrollTo(0, 0);
+  }
+}
+
+function showResult() {
+  var scores = { legend: 0, scholar: 0, catalyst: 0, realist: 0, hunter: 0, iconoclast: 0 };
+  answers.forEach(function(ans, qi) {
+    if (ans !== undefined) {
+      var arc = QUESTIONS[qi].opts[ans].arc;
+      scores[arc]++;
+    }
+  });
+
+  var sorted = Object.entries(scores).sort(function(a, b) { return b[1] - a[1]; });
+  var top = sorted[0][0];
+  var second = sorted[1][0];
+  var third = sorted[2][0];
+
+  var a = ARCHETYPES[top];
+
+  document.getElementById('quiz').style.display = 'none';
+  var r = document.getElementById('result');
+  r.style.display = 'block';
+
+  var allCards = Object.entries(ARCHETYPES).map(function(entry) {
+    var key = entry[0];
+    var val = entry[1];
+    var isYou = key === top;
+    return '<div class="arch-card' + (isYou ? ' is-you' : '') + '">' +
+      '<div class="arch-card-name">' + val.name + (isYou ? ' ✦' : '') + '</div>' +
+      '<div class="arch-card-verb">' + val.verb.replace('CARMA — you ', '') + '</div>' +
+      '</div>';
+  }).join('');
+
+  r.innerHTML =
+    '<div class="result-eyebrow">YOUR ARCHETYPE</div>' +
+    '<div class="result-name">' + a.name + '</div>' +
+    '<div class="result-verb">' + a.verb + '</div>' +
+    '<div class="result-rule"></div>' +
+    '<p class="result-desc">' + a.desc + '</p>' +
+    '<div class="traits">' + a.traits.map(function(t) { return '<span class="trait">' + t + '</span>'; }).join('') + '</div>' +
+    '<div class="also-label">YOU ALSO HAVE STREAKS OF</div>' +
+    '<div class="also-chips">' +
+      '<span class="also-chip">' + ARCHETYPES[second].name + '</span>' +
+      '<span class="also-chip">' + ARCHETYPES[third].name + '</span>' +
+    '</div>' +
+    '<hr class="result-divider">' +
+    '<div class="all-archetypes">' +
+      '<div class="all-label">THE SIX ARCHETYPES</div>' +
+      '<div class="arch-grid">' + allCards + '</div>' +
+    '</div>' +
+    '<div class="share-section">' +
+      '<div class="share-label">SHARE YOUR RESULT</div>' +
+      '<p class="share-sub">Let us know which archetype you are — we're tallying results across CARMA.</p>' +
+      '<div class="share-btns">' +
+        '<a class="share-btn share-email" href="' + buildEmailLink(a.name, a.verb) + '" target="_blank">Share by email</a>' +
+        '<button class="share-btn share-copy" onclick="copyResult('' + a.name + '', '' + a.verb + '')">Copy to clipboard</button>' +
+      '</div>' +
+      '<div id="copy-confirm" class="copy-confirm"></div>' +
+    '</div>' +
+    '<button class="retake-btn" onclick="retake()">Retake the quiz</button>';
+
+  window.scrollTo(0, 0);
+}
+
+function retake() {
+  current = 0;
+  answers = [];
+  selected = null;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  render();
+  window.scrollTo(0, 0);
+}
+
+function buildEmailLink(name, verb) {
+  var subject = encodeURIComponent('CARMA Archetype Quiz — I got ' + name);
+  var body = encodeURIComponent(
+    'I just took the CARMA Archetype Quiz and my result is:\n\n' +
+    name + '\n' +
+    verb + '\n\n' +
+    'What archetype are you? Take the quiz and let us know!'
+  );
+  return 'mailto:?subject=' + subject + '&body=' + body;
+}
+
+function copyResult(name, verb) {
+  var text = 'I just took the CARMA Archetype Quiz — I got ' + name + '. ' + verb + '. What are you?';
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() {
+      showCopyConfirm('Copied! Paste it into Teams, WhatsApp or wherever you like.');
+    });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showCopyConfirm('Copied! Paste it into Teams, WhatsApp or wherever you like.');
+  }
+}
+
+function showCopyConfirm(msg) {
+  var el = document.getElementById('copy-confirm');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(function() { el.style.display = 'none'; }, 3500);
+}
+</script>
+</body>
+</html>
